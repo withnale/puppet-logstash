@@ -180,7 +180,9 @@ class logstash(
   $manage_repo         = false,
   $repo_version        = $logstash::params::repo_version,
   $install_contrib     = false,
-  $repo_stage          = false
+  $repo_stage          = false,
+  $multiple_config_files      = false,
+  $config              = {}
 ) inherits logstash::params {
 
   anchor {'logstash::begin': }
@@ -219,6 +221,9 @@ class logstash(
   if ($package_url != undef and $version != false) {
     fail('Unable to set the version number when using package_url option.')
   }
+
+  # Create any configfile fragments specified by hiera
+  create_resources('::logstash::configfile', $config)
 
   validate_bool($manage_repo)
 

@@ -54,12 +54,33 @@ define logstash::configfile(
     $config_content = $content
   }
 
-  file_fragment { $name:
-    tag     => "LS_CONFIG_${::fqdn}",
-    content => $config_content,
-    source  => $source,
-    order   => $order,
-    before  => [ File_concat['ls-config'] ]
+  if ($logstash::multiple_config_files) {
+    $notify_service = $logstash::restart_on_change ? {
+      true  => Class['logstash::service'],
+      false => undef,
+    }
+
+    if ($order != undef) {
+      $longname = "${logstash::configdir}/conf.d/${order}-${name}"
+    } else {
+      $longname = "${logstash::configdir}/conf.d/${name}"
+    }
+
+    file { $longname:
+      content => $config_content,
+      source  => $source,
+      mode    => '0644',
+      notify  => $notify_service,     
+      require => File["${logstash::configdir}/conf.d"]
+    }
+  } else {
+    file_fragment { $name:
+      tag     => "LS_CONFIG_${::fqdn}",
+      content => $config_content,
+      source  => $source,
+      order   => $order,
+      before  => [ File_concat['ls-config'] ]
+    }
   }
 
 }

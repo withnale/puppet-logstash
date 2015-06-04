@@ -51,18 +51,21 @@ class logstash::config {
       ensure  => directory,
       purge   => $logstash::purge_configdir,
       recurse => $logstash::purge_configdir,
-      require => File[$logstash::configdir]
+      require => File[$logstash::configdir],
+      notify  => $notify_service,
     }
 
-    file_concat { 'ls-config':
-      ensure  => 'present',
-      tag     => "LS_CONFIG_${::fqdn}",
-      path    => "${logstash::configdir}/conf.d/logstash.conf",
-      owner   => $logstash::logstash_user,
-      group   => $logstash::logstash_group,
-      mode    => '0644',
-      notify  => $notify_service,
-      require => File[ "${logstash::configdir}/conf.d" ]
+    if ($logstash::multiple_config_files == false) {
+      file_concat { 'ls-config':
+        ensure  => 'present',
+        tag     => "LS_CONFIG_${::fqdn}",
+        path    => "${logstash::configdir}/conf.d/logstash.conf",
+        owner   => $logstash::logstash_user,
+        group   => $logstash::logstash_group,
+        mode    => '0644',
+        notify  => $notify_service,
+        require => File[ "${logstash::configdir}/conf.d" ]
+      }
     }
 
     file { $patterns_dir:

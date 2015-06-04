@@ -55,6 +55,9 @@ class logstash::params {
   # default version to use if non is provided when manage_repo is set to true
   $repo_version = '1.4'
 
+  # Use multiple files in preference to file_concat
+  $multiple_config_files = false
+
   #### Internal module values
 
   # User and Group for the files and user to run the service as.
